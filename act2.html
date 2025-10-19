@@ -446,9 +446,25 @@
     const BOTTOM_ROWS = 9; // Remaining rows in bottom section (rows 8-16, for 17 total rows)
 
     // ==================== TEXT CONTENT (from ACT 1) ====================
-    const TEXT = "The first exodus is yours. You open a season. Rush where the angels were afraid to go. Complete a course in impossibility. And now the words you use are ripe, full, sugar, their skin the domestic tempting of cosmic crisps. But have you eaten? Have you noticed how the siren song of apple flesh gorged on rain glisten-calls your name until your teeth give in, how hunger sounds like a country ready to forget you? How the words you use now huffpuff as they shore up your international body.";
+    const ORIGINAL_TEXT = "The first exodus is yours. You open a season. Rush where the angels were afraid to go. Complete a course in impossibility. And now the words you use are ripe, full, sugar, their skin the domestic tempting of cosmic crisps. But have you eaten? Have you noticed how the siren song of apple flesh gorged on rain glisten-calls your name until your teeth give in, how hunger sounds like a country ready to forget you? How the words you use now huffpuff as they shore up your international body.";
     
-    const tokens = TEXT.split(/\s+/).filter(t => t.length > 0);
+    const ORIGINAL_TOP_DEF = `<p><strong>Displacement</strong> <em>noun</em><br>Softer replacement.</p>
+<p><strong>Words</strong> <em>noun, plural</em><br>Language powder ripping the day open like commerce, pieces of melancholy.</p>
+<p><strong>Identity</strong> <em>noun</em><br>The unintended byproduct of the words you use, a lease on an unabridged self.</p>`;
+    
+    const ORIGINAL_BOTTOM_DEF = `<p><strong>Body</strong> <em>noun</em><br>Incongruency making due with the motherly press of gravity.</p>
+<p><strong>Words</strong> <em>noun, plural</em><br>Rooming into your mouth, pushing sound against the inside of your cheeks like a rougher lover.</p>
+<p><strong>Replacement</strong> <em>noun</em><br>Rougher displacement.</p>`;
+    
+    const DARK_TOP_DEF = `<p>Download the CBP Home App</p>
+<p>"If you are here illegally, use the CBP Home App to take control of your departure and receive financial support to return home," said Secretary Kristi Noem.</p>`;
+    
+    const DARK_BOTTOM_DEF = `<p>"If you don't, you will be subjected to fines, arrest, deportation and will never be allowed to return. If you are in this country illegally, self-deport NOW and preserve your opportunity to potentially return the legal, right way."</p>
+<p>Incentives Using the CBP Home Mobile App to self-deport includes the following incentives.</p>`;
+    
+    let currentText = ORIGINAL_TEXT;
+    let tokens = currentText.split(/\s+/).filter(t => t.length > 0);
+    let isDarkMode = false;
 
     // ==================== STATE ====================
     let audioContext = null;
@@ -497,13 +513,8 @@
       
       // Dark mode toggle
       darkModeToggle.addEventListener('click', () => {
-        if (darkModeToggle.textContent === '☀') {
-          darkModeToggle.textContent = '☁︎';
-          // Dark mode functionality to be implemented
-        } else {
-          darkModeToggle.textContent = '☀';
-          // Light mode functionality to be implemented
-        }
+        isDarkMode = !isDarkMode;
+        toggleDarkMode();
       });
       
       // Prevent nav button click when disabled
@@ -692,13 +703,8 @@
 
       // Wait for fade out, then create definition boxes
       setTimeout(() => {
-        createDefinitionBox('top', topBounds, `<p><strong>Displacement</strong> <em>noun</em><br>Softer replacement.</p>
-<p><strong>Words</strong> <em>noun, plural</em><br>Language powder ripping the day open like commerce, pieces of melancholy.</p>
-<p><strong>Identity</strong> <em>noun</em><br>The unintended byproduct of the words you use, a lease on an unabridged self.</p>`);
-        
-        createDefinitionBox('bottom', bottomBounds, `<p><strong>Body</strong> <em>noun</em><br>Incongruency making due with the motherly press of gravity.</p>
-<p><strong>Words</strong> <em>noun, plural</em><br>Rooming into your mouth, pushing sound against the inside of your cheeks like a rougher lover.</p>
-<p><strong>Replacement</strong> <em>noun</em><br>Rougher displacement.</p>`);
+        createDefinitionBox('top', topBounds, isDarkMode ? DARK_TOP_DEF : ORIGINAL_TOP_DEF);
+        createDefinitionBox('bottom', bottomBounds, isDarkMode ? DARK_BOTTOM_DEF : ORIGINAL_BOTTOM_DEF);
         
         // Hide word columns completely
         setTimeout(() => {
@@ -762,6 +768,66 @@
           navButton.classList.add('enabled');
         }
       }, 100);
+    }
+
+    // ==================== DARK MODE TOGGLE ====================
+    function toggleDarkMode() {
+      if (isDarkMode) {
+        // Switch to dark mode
+        darkModeToggle.textContent = '☁︎';
+        navButton.textContent = 'Borders';
+        document.getElementById('instruction-box').textContent = 'ACT 2: CBP Home Mobile App';
+        currentText = ORIGINAL_TEXT; // Keep word boxes as original for now
+      } else {
+        // Switch back to light mode
+        darkModeToggle.textContent = '☀';
+        navButton.textContent = 'breathe';
+        document.getElementById('instruction-box').textContent = 'ACT 2: Your voice glossaries belongings';
+        currentText = ORIGINAL_TEXT;
+      }
+      
+      // Update word boxes if they exist
+      replaceAllWords();
+      
+      // Update definition boxes if they exist
+      replaceDefinitionBoxes();
+    }
+    
+    function replaceAllWords() {
+      const allWordBoxes = document.querySelectorAll('.word-box');
+      allWordBoxes.forEach((box) => {
+        if (isDarkMode) {
+          box.style.background = '#000';
+          box.style.color = '#FFF';
+        } else {
+          box.style.background = '#FFF';
+          box.style.color = '#000';
+        }
+      });
+    }
+    
+    function replaceDefinitionBoxes() {
+      const defBoxes = document.querySelectorAll('.definition-box');
+      defBoxes.forEach((box) => {
+        if (isDarkMode) {
+          box.style.background = '#000';
+          box.style.color = '#FFF';
+          // Update content based on side
+          if (box.dataset.side === 'top') {
+            box.innerHTML = DARK_TOP_DEF;
+          } else if (box.dataset.side === 'bottom') {
+            box.innerHTML = DARK_BOTTOM_DEF;
+          }
+        } else {
+          box.style.background = '#FFF';
+          box.style.color = '#000';
+          if (box.dataset.side === 'top') {
+            box.innerHTML = ORIGINAL_TOP_DEF;
+          } else if (box.dataset.side === 'bottom') {
+            box.innerHTML = ORIGINAL_BOTTOM_DEF;
+          }
+        }
+      });
     }
 
     // ==================== START ====================

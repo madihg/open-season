@@ -459,7 +459,7 @@
     const SNAP_THRESHOLD = 80; // Distance threshold for snapping (increased for mobile)
 
     // ==================== TEXT CONTENT ====================
-    const TEXT_SECTIONS = [
+    const ORIGINAL_SECTIONS = [
       "It's been twenty years and change",
       "And change, and you thought it easy",
       "to close the mouth of a wound",
@@ -469,6 +469,22 @@
       "and so you slither against",
       "the warm hilltop rocks of longing"
     ];
+    
+    const DARK_TEXT = "Once non-criminal illegal aliens submit their intent to depart through the CBP Home Mobile App and pass vetting, they will be temporarily deprioritized by ICE for detention or enforcement action before their scheduled departure. Image Financial and travel document assistance for those in need Illegal aliens who register for voluntary self-departure through the CBP Home Mobile App will receive cost-free travel, a $1,000 exit bonus, and forgiveness of any failure to depart fines. Illegal aliens requesting assistance will have a timely departure arranged for them.";
+    
+    const DARK_SECTIONS = DARK_TEXT.split(/\s+/).filter(t => t.length > 0);
+    
+    // Pad or truncate to 8 sections
+    const DARK_TEXT_SECTIONS = [];
+    const wordsPerSection = Math.ceil(DARK_SECTIONS.length / 8);
+    for (let i = 0; i < 8; i++) {
+      const start = i * wordsPerSection;
+      const end = Math.min(start + wordsPerSection, DARK_SECTIONS.length);
+      DARK_TEXT_SECTIONS.push(DARK_SECTIONS.slice(start, end).join(' '));
+    }
+    
+    let TEXT_SECTIONS = [...ORIGINAL_SECTIONS];
+    let isDarkMode = false;
 
     // House shape definition (8 lines forming a simple house)
     // Each line: { x1, y1, x2, y2, angle, length, midX, midY, index }
@@ -513,13 +529,8 @@
       
       // Dark mode toggle
       darkModeToggle.addEventListener('click', () => {
-        if (darkModeToggle.textContent === '☀') {
-          darkModeToggle.textContent = '☁︎';
-          // Dark mode functionality to be implemented
-        } else {
-          darkModeToggle.textContent = '☀';
-          // Light mode functionality to be implemented
-        }
+        isDarkMode = !isDarkMode;
+        toggleDarkMode();
       });
       
       // Prevent nav button click when disabled
@@ -911,6 +922,63 @@
     function onAllPlaced() {
       console.log('✓ All rectangles placed! House complete. Enabling navigation.');
       navButton.classList.add('enabled');
+    }
+
+    // ==================== DARK MODE TOGGLE ====================
+    function toggleDarkMode() {
+      if (isDarkMode) {
+        // Switch to dark mode
+        darkModeToggle.textContent = '☁︎';
+        navButton.textContent = 'Protection';
+        document.getElementById('instruction-box').textContent = 'ACT 3: Voluntary Departure Program';
+        TEXT_SECTIONS = [...DARK_TEXT_SECTIONS];
+      } else {
+        // Switch back to light mode
+        darkModeToggle.textContent = '☀';
+        navButton.textContent = 'place';
+        document.getElementById('instruction-box').textContent = 'ACT 3: Your hands language home';
+        TEXT_SECTIONS = [...ORIGINAL_SECTIONS];
+      }
+      
+      // Update definition boxes if they exist
+      replaceDefinitionBoxes();
+      
+      // Update placed rectangles if they exist
+      replacePlacedRectangles();
+    }
+    
+    function replaceDefinitionBoxes() {
+      const defBoxes = document.querySelectorAll('.definition-box');
+      defBoxes.forEach((box) => {
+        if (isDarkMode) {
+          box.style.background = '#000';
+          box.style.color = '#FFF';
+        } else {
+          box.style.background = '#FFF';
+          box.style.color = '#000';
+        }
+      });
+    }
+    
+    function replacePlacedRectangles() {
+      rectangles.forEach((rectData) => {
+        const rect = rectData.element;
+        
+        if (isDarkMode) {
+          rect.style.background = '#000';
+          rect.style.color = '#FFF';
+          // Update text if placed
+          if (rectData.placed && rectData.textIndex !== undefined) {
+            rect.textContent = TEXT_SECTIONS[rectData.textIndex] || '';
+          }
+        } else {
+          rect.style.background = '#FFF';
+          rect.style.color = '#000';
+          if (rectData.placed && rectData.textIndex !== undefined) {
+            rect.textContent = TEXT_SECTIONS[rectData.textIndex] || '';
+          }
+        }
+      });
     }
 
     // ==================== START ====================

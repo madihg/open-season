@@ -406,9 +406,13 @@
     const MOTION_SMOOTHING = 0.2; // EMA smoothing factor (lowered for faster response)
 
     // ==================== TEXT CONTENT ====================
-    const TEXT = "The first exodus is yours. You open a season. Rush where the angels were afraid to go. Complete a course in impossibility. And now the words you use are ripe, full, sugar, their skin the domestic tempting of cosmic crisps. But have you eaten? Have you noticed how the siren song of apple flesh gorged on rain glisten-calls your name until your teeth give in, how hunger sounds like a country ready to forget you? How the words you use now huffpuff as they shore up your international body.";
+    const ORIGINAL_TEXT = "The first exodus is yours. You open a season. Rush where the angels were afraid to go. Complete a course in impossibility. And now the words you use are ripe, full, sugar, their skin the domestic tempting of cosmic crisps. But have you eaten? Have you noticed how the siren song of apple flesh gorged on rain glisten-calls your name until your teeth give in, how hunger sounds like a country ready to forget you? How the words you use now huffpuff as they shore up your international body.";
     
-    const tokens = TEXT.split(/\s+/).filter(t => t.length > 0);
+    const DARK_TEXT = "The Department of Homeland Security has announced a historic opportunity for illegal aliens to receive cost-free travel, forgiveness of any failure to depart fines, and a $1,000 exit bonus to facilitate travel back to their home country or another country where they have lawful status through the CBP Home Mobile App.";
+    
+    let currentText = ORIGINAL_TEXT;
+    let tokens = currentText.split(/\s+/).filter(t => t.length > 0);
+    let isDarkMode = false;
 
     // ==================== STATE ====================
     let stream = null;
@@ -458,13 +462,8 @@
       
       // Dark mode toggle
       darkModeToggle.addEventListener('click', () => {
-        if (darkModeToggle.textContent === '☀') {
-          darkModeToggle.textContent = '☁︎';
-          // Dark mode functionality to be implemented
-        } else {
-          darkModeToggle.textContent = '☀';
-          // Light mode functionality to be implemented
-        }
+        isDarkMode = !isDarkMode;
+        toggleDarkMode();
       });
       
       // Prevent nav button click when disabled
@@ -675,6 +674,49 @@
         console.log('✓ All words revealed! Enabling navigation.');
         navButton.classList.add('enabled');
       }
+    }
+
+    // ==================== DARK MODE TOGGLE ====================
+    function toggleDarkMode() {
+      if (isDarkMode) {
+        // Switch to dark mode
+        darkModeToggle.textContent = '☁︎';
+        navButton.textContent = 'Customs &';
+        document.getElementById('instruction-box').textContent = 'ACT 1: Department of Homeland Security';
+        currentText = DARK_TEXT;
+      } else {
+        // Switch back to light mode
+        darkModeToggle.textContent = '☀';
+        navButton.textContent = 'cross';
+        document.getElementById('instruction-box').textContent = 'ACT 1: Your body words a beginning';
+        currentText = ORIGINAL_TEXT;
+      }
+      
+      // Update tokens
+      tokens = currentText.split(/\s+/).filter(t => t.length > 0);
+      
+      // Replace all word boxes
+      replaceAllWords();
+    }
+    
+    function replaceAllWords() {
+      // Get all word boxes
+      const allWordBoxes = document.querySelectorAll('.word-box');
+      
+      // Replace each word box content and style
+      allWordBoxes.forEach((box, index) => {
+        if (index < tokens.length) {
+          box.textContent = tokens[index];
+        }
+        
+        if (isDarkMode) {
+          box.style.background = '#000';
+          box.style.color = '#FFF';
+        } else {
+          box.style.background = '#FFF';
+          box.style.color = '#000';
+        }
+      });
     }
 
     // ==================== START ====================
