@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Act 1: Your Body</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Times New Roman", serif;
+      background: #000;
+      color: #000;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* Webcam video background */
+    #webcam-video {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      filter: grayscale(100%) contrast(140%) brightness(90%);
+    }
+
+    /* Grain overlay */
+    #grain-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      opacity: 0.15;
+      pointer-events: none;
+      background-image: 
+        repeating-radial-gradient(circle at 17% 32%, transparent 0, rgba(0,0,0,.1) 1px, transparent 2px),
+        repeating-radial-gradient(circle at 82% 67%, transparent 0, rgba(0,0,0,.08) 1px, transparent 2px),
+        repeating-radial-gradient(circle at 45% 78%, transparent 0, rgba(0,0,0,.12) 1px, transparent 2px);
+      background-size: 3px 3px, 4px 4px, 5px 5px;
+      animation: grain-animation 8s infinite linear;
+    }
+
+    @keyframes grain-animation {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2px, 2px); }
+      50% { transform: translate(2px, -2px); }
+      75% { transform: translate(-1px, -1px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    /* Instruction box */
+    #instruction-box {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      padding: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      z-index: 100;
+      line-height: 1.4;
+    }
+
+    /* Hint button */
+    #hint-button {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-family: "Courier New", monospace;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 150ms, color 150ms;
+    }
+
+    #hint-button:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Words container */
+    #words-container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      padding-top: 120px;
+      padding-bottom: 60px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    #words-grid {
+      display: grid;
+      grid-template-columns: repeat(6, max-content);
+      column-gap: 24px;
+      justify-content: center;
+    }
+
+    .word-column {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .word-box {
+      background: #FFF;
+      border: 1px solid #000;
+      padding: 6px 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Times New Roman", serif;
+      font-size: 16px;
+      line-height: 1.2;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 700ms ease-out, transform 700ms ease-out;
+    }
+
+    .word-box.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Modal */
+    #permission-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #permission-modal.hidden {
+      display: none;
+    }
+
+    #modal-content {
+      background: #FFF;
+      border: 2px solid #000;
+      padding: 30px;
+      text-align: center;
+      font-family: "Courier New", monospace;
+      max-width: 400px;
+    }
+
+    #modal-content p {
+      margin-bottom: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    #modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    #modal-buttons button {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      padding: 10px 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      cursor: pointer;
+      transition: background 150ms, color 150ms;
+    }
+
+    #modal-buttons button:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Hint modal */
+    #hint-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #hint-modal.hidden {
+      display: none;
+    }
+
+    #hint-modal-content {
+      background: #FFF;
+      border: 2px solid #000;
+      padding: 30px;
+      text-align: center;
+      font-family: "Courier New", monospace;
+      max-width: 400px;
+    }
+
+    #hint-modal-content p {
+      margin-bottom: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    #hint-close {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      padding: 10px 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      cursor: pointer;
+      transition: background 150ms, color 150ms;
+    }
+
+    #hint-close:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Hidden measurement span */
+    #measurement-span {
+      position: absolute;
+      visibility: hidden;
+      white-space: nowrap;
+      font-family: "Times New Roman", serif;
+      font-size: 16px;
+      padding: 6px 10px;
+      border: 1px solid #000;
+      line-height: 1.2;
+    }
+
+    /* Hidden canvas for motion detection */
+    #motion-canvas {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <!-- Webcam video background -->
+  <video id="webcam-video" muted playsinline autoplay></video>
+
+  <!-- Grain overlay -->
+  <div id="grain-overlay"></div>
+
+  <!-- Instruction box -->
+  <div id="instruction-box">
+    ACT 1: Your body words a beginning
+  </div>
+
+  <!-- Hint button -->
+  <div id="hint-button">?</div>
+
+  <!-- Words container -->
+  <div id="words-container">
+    <div id="words-grid">
+      <div class="word-column" data-col="0"></div>
+      <div class="word-column" data-col="1"></div>
+      <div class="word-column" data-col="2"></div>
+      <div class="word-column" data-col="3"></div>
+      <div class="word-column" data-col="4"></div>
+      <div class="word-column" data-col="5"></div>
+    </div>
+  </div>
+
+  <!-- Permission modal -->
+  <div id="permission-modal">
+    <div id="modal-content">
+      <p>May we move with you?<br>(Webcam required)</p>
+      <div id="modal-buttons">
+        <button id="btn-yes">Yes</button>
+        <button id="btn-no">No</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint modal -->
+  <div id="hint-modal" class="hidden">
+    <div id="hint-modal-content">
+      <p>Hint: Closer is better.</p>
+      <button id="hint-close">Close</button>
+    </div>
+  </div>
+
+  <!-- Hidden canvas for motion detection -->
+  <canvas id="motion-canvas"></canvas>
+
+  <!-- Measurement span -->
+  <span id="measurement-span"></span>
+
+  <script>
+    // ==================== CONFIGURATION ====================
+    const NUM_COLUMNS = 6;
+    const MOTION_CANVAS_SIZE = { w: 96, h: 72 };
+    const MOTION_THRESHOLD = 0.015; // Lowered threshold for better sensitivity
+    const REVEAL_INTERVAL_MS = 350;
+    const COLUMN_GAP_PX = 24;
+    const BOX_PADDING = "6px 10px";
+    const TOP_SAFE_PADDING = "120px";
+    const MOTION_SMOOTHING = 0.2; // EMA smoothing factor (lowered for faster response)
+
+    // ==================== TEXT CONTENT ====================
+    const TEXT = "The first exodus is yours. You open a season. Rush where the angels were afraid to go. Complete a course in impossibility. And now the words you use are ripe, full, sugar, their skin the domestic tempting of cosmic crisps. But have you eaten? Have you noticed how the siren song of apple flesh gorged on rain glisten-calls your name until your teeth give in, how hunger sounds like a country ready to forget you? How the words you use now huffpuff as they shore up your international body.";
+    
+    const tokens = TEXT.split(/\s+/).filter(t => t.length > 0);
+
+    // ==================== STATE ====================
+    let stream = null;
+    let videoElement = null;
+    let motionCanvas = null;
+    let motionCtx = null;
+    let previousFrameData = null;
+    let motionEMA = 0;
+    let nextIndex = 0;
+    let lastRevealTime = 0;
+    let animationId = null;
+    let isActive = false;
+
+    // ==================== DOM ELEMENTS ====================
+    const modal = document.getElementById('permission-modal');
+    const btnYes = document.getElementById('btn-yes');
+    const btnNo = document.getElementById('btn-no');
+    const hintButton = document.getElementById('hint-button');
+    const hintModal = document.getElementById('hint-modal');
+    const hintClose = document.getElementById('hint-close');
+    const wordsGrid = document.getElementById('words-grid');
+    const wordColumns = Array.from(document.querySelectorAll('.word-column'));
+    const measurementSpan = document.getElementById('measurement-span');
+
+    // ==================== INITIALIZATION ====================
+    function init() {
+      videoElement = document.getElementById('webcam-video');
+      motionCanvas = document.getElementById('motion-canvas');
+      motionCanvas.width = MOTION_CANVAS_SIZE.w;
+      motionCanvas.height = MOTION_CANVAS_SIZE.h;
+      motionCtx = motionCanvas.getContext('2d', { willReadFrequently: true });
+
+      // Set up column widths
+      setupColumnWidths();
+
+      // Event listeners
+      btnYes.addEventListener('click', handleYes);
+      btnNo.addEventListener('click', handleNo);
+      hintButton.addEventListener('click', () => {
+        hintModal.classList.remove('hidden');
+      });
+      hintClose.addEventListener('click', () => {
+        hintModal.classList.add('hidden');
+      });
+    }
+
+    // ==================== COLUMN WIDTH SETUP ====================
+    function setupColumnWidths() {
+      // Group tokens by column
+      const columnTokens = Array.from({ length: NUM_COLUMNS }, () => []);
+      tokens.forEach((token, idx) => {
+        const colIdx = idx % NUM_COLUMNS;
+        columnTokens[colIdx].push(token);
+      });
+
+      // Measure max width per column
+      columnTokens.forEach((colTokens, colIdx) => {
+        let maxWidth = 0;
+        colTokens.forEach(token => {
+          measurementSpan.textContent = token;
+          const width = measurementSpan.offsetWidth;
+          if (width > maxWidth) maxWidth = width;
+        });
+        
+        // Set CSS variable for this column
+        const column = wordColumns[colIdx];
+        column.style.setProperty('--colw', `${maxWidth}px`);
+        column.style.width = `${maxWidth}px`;
+      });
+    }
+
+    // ==================== MODAL HANDLERS ====================
+    async function handleYes() {
+      try {
+        console.log('Requesting webcam access...');
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            width: { ideal: 640 },
+            height: { ideal: 480 }
+          } 
+        });
+        
+        videoElement.srcObject = stream;
+        
+        // Wait for video to be ready
+        await new Promise((resolve) => {
+          videoElement.onloadedmetadata = () => {
+            console.log('Video metadata loaded, starting playback...');
+            resolve();
+          };
+        });
+        
+        await videoElement.play();
+        console.log('✓ Webcam started! Video dimensions:', videoElement.videoWidth, 'x', videoElement.videoHeight);
+        
+        modal.classList.add('hidden');
+        isActive = true;
+        
+        // Start motion detection loop after a small delay to ensure video is flowing
+        setTimeout(() => {
+          console.log('Starting motion detection...');
+          startMotionDetection();
+        }, 500);
+      } catch (err) {
+        console.error('Error accessing webcam:', err);
+        alert('Could not access webcam. Please check permissions.');
+      }
+    }
+
+    function handleNo() {
+      modal.querySelector('p').textContent = 'Movement is required to reveal the words.';
+      modal.querySelector('#modal-buttons').style.display = 'none';
+    }
+
+    // ==================== MOTION DETECTION ====================
+    function startMotionDetection() {
+      function loop() {
+        if (!isActive) return;
+        
+        const motion = computeMotion();
+        
+        // Update EMA
+        motionEMA = motionEMA * (1 - MOTION_SMOOTHING) + motion * MOTION_SMOOTHING;
+        
+        // Debug logging (comment out after testing)
+        if (Math.random() < 0.05) { // Log ~5% of frames to avoid console spam
+          console.log(`Motion: ${motion.toFixed(4)}, EMA: ${motionEMA.toFixed(4)}, Threshold: ${MOTION_THRESHOLD}, Next: ${nextIndex}/${tokens.length}`);
+        }
+        
+        // Check if we should reveal next word
+        const now = performance.now();
+        if (motionEMA >= MOTION_THRESHOLD && 
+            now - lastRevealTime >= REVEAL_INTERVAL_MS &&
+            nextIndex < tokens.length) {
+          console.log(`✓ Revealing word #${nextIndex}: "${tokens[nextIndex]}" (motion: ${motionEMA.toFixed(4)})`);
+          revealNextWord();
+          lastRevealTime = now;
+        }
+        
+        // Stop if all words revealed
+        if (nextIndex >= tokens.length) {
+          stopMotionDetection();
+          return;
+        }
+        
+        animationId = requestAnimationFrame(loop);
+      }
+      
+      loop();
+    }
+
+    function computeMotion() {
+      if (!videoElement.readyState || videoElement.readyState < 2) {
+        return 0;
+      }
+
+      try {
+        // Draw current frame to motion canvas
+        motionCtx.drawImage(
+          videoElement,
+          0, 0,
+          MOTION_CANVAS_SIZE.w,
+          MOTION_CANVAS_SIZE.h
+        );
+        
+        const currentFrameData = motionCtx.getImageData(
+          0, 0,
+          MOTION_CANVAS_SIZE.w,
+          MOTION_CANVAS_SIZE.h
+        );
+        
+        if (!previousFrameData) {
+          previousFrameData = currentFrameData;
+          return 0;
+        }
+        
+        // Compute difference
+        let diff = 0;
+        let sampleCount = 0;
+        
+        // Sample every 2nd pixel for performance (step through RGBA values)
+        for (let i = 0; i < currentFrameData.data.length; i += 8) {
+          // Convert to luma (grayscale)
+          const r1 = currentFrameData.data[i];
+          const g1 = currentFrameData.data[i + 1];
+          const b1 = currentFrameData.data[i + 2];
+          const luma1 = 0.299 * r1 + 0.587 * g1 + 0.114 * b1;
+          
+          const r2 = previousFrameData.data[i];
+          const g2 = previousFrameData.data[i + 1];
+          const b2 = previousFrameData.data[i + 2];
+          const luma2 = 0.299 * r2 + 0.587 * g2 + 0.114 * b2;
+          
+          diff += Math.abs(luma1 - luma2);
+          sampleCount++;
+        }
+        
+        previousFrameData = currentFrameData;
+        
+        // Normalize to [0, 1]
+        const normalized = diff / (sampleCount * 255);
+        
+        return normalized;
+      } catch (err) {
+        console.error('Motion detection error:', err);
+        return 0;
+      }
+    }
+
+    function stopMotionDetection() {
+      isActive = false;
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+        animationId = null;
+      }
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+      }
+    }
+
+    // ==================== WORD REVEAL ====================
+    function revealNextWord() {
+      const token = tokens[nextIndex];
+      const colIdx = nextIndex % NUM_COLUMNS;
+      const column = wordColumns[colIdx];
+      
+      // Create word box
+      const wordBox = document.createElement('div');
+      wordBox.className = 'word-box';
+      wordBox.textContent = token;
+      column.appendChild(wordBox);
+      
+      // Trigger reveal animation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          wordBox.classList.add('revealed');
+        });
+      });
+      
+      nextIndex++;
+    }
+
+    // ==================== START ====================
+    init();
+  </script>
+</body>
+</html>
+

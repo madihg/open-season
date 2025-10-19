@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Act 3: Your Hands</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Times New Roman", serif;
+      background: #000;
+      color: #000;
+      overflow-x: hidden;
+      min-height: 100vh;
+      position: relative;
+      touch-action: none;
+    }
+
+    /* Black background with subtle grain */
+    #background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 0;
+    }
+
+    /* Grain overlay */
+    #grain-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      opacity: 0.15;
+      pointer-events: none;
+      background-image: 
+        repeating-radial-gradient(circle at 17% 32%, transparent 0, rgba(255,255,255,.1) 1px, transparent 2px),
+        repeating-radial-gradient(circle at 82% 67%, transparent 0, rgba(255,255,255,.08) 1px, transparent 2px),
+        repeating-radial-gradient(circle at 45% 78%, transparent 0, rgba(255,255,255,.12) 1px, transparent 2px);
+      background-size: 3px 3px, 4px 4px, 5px 5px;
+      animation: grain-animation 8s infinite linear;
+    }
+
+    @keyframes grain-animation {
+      0% { transform: translate(0, 0); }
+      25% { transform: translate(-2px, 2px); }
+      50% { transform: translate(2px, -2px); }
+      75% { transform: translate(-1px, -1px); }
+      100% { transform: translate(0, 0); }
+    }
+
+    /* Instruction box */
+    #instruction-box {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      padding: 10px;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      z-index: 100;
+      line-height: 1.4;
+    }
+
+    /* Main container */
+    #main-container {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      width: 100%;
+    }
+
+    /* Definition boxes (starting state) */
+    .definition-box {
+      position: fixed;
+      background: #FFF;
+      border: 1px solid #000;
+      padding: 30px;
+      font-family: "Times New Roman", serif;
+      font-size: 16px;
+      line-height: 1.8;
+      z-index: 10;
+      transition: opacity 3s ease-out;
+    }
+
+    .definition-box.fading {
+      opacity: 0;
+    }
+
+    .definition-box p {
+      margin-bottom: 15px;
+    }
+
+    .definition-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .definition-box strong {
+      font-weight: normal;
+    }
+
+    /* Rectangles */
+    .rectangle {
+      position: absolute;
+      background: #FFF;
+      border: 1px solid #000;
+      padding: 15px;
+      font-family: "Times New Roman", serif;
+      font-size: 16px;
+      line-height: 1.4;
+      cursor: move;
+      user-select: none;
+      touch-action: none;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: transform 0.5s ease-out, top 0.8s ease-in, left 0.3s ease-out;
+      color: transparent;
+    }
+
+    .rectangle.falling {
+      transition: top 2s cubic-bezier(0.4, 0, 0.6, 1), left 0.5s ease-out;
+    }
+
+    .rectangle.dragging {
+      z-index: 100;
+      cursor: grabbing;
+      transition: none;
+    }
+
+    .rectangle.placed {
+      cursor: default;
+      color: #000;
+      transition: transform 1s ease-out, color 1s ease-in 0.5s;
+    }
+
+    /* House shape with dotted lines */
+    #house-shape {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 1s ease-in;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    #house-shape.visible {
+      opacity: 1;
+    }
+
+    .house-line {
+      position: absolute;
+      border: 2px dashed rgba(255, 255, 255, 0.5);
+      transform-origin: 0 0;
+      transition: border-color 0.2s ease;
+    }
+
+    .house-line.highlight {
+      border-color: rgba(255, 255, 255, 0.9);
+      border-width: 3px;
+    }
+
+    /* Modal */
+    #permission-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #permission-modal.hidden {
+      display: none;
+    }
+
+    #modal-content {
+      background: #FFF;
+      border: 2px solid #000;
+      padding: 30px;
+      text-align: center;
+      font-family: "Courier New", monospace;
+      max-width: 400px;
+    }
+
+    #modal-content p {
+      margin-bottom: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    #modal-buttons {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+    }
+
+    #modal-buttons button {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      padding: 10px 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      cursor: pointer;
+      transition: background 150ms, color 150ms;
+    }
+
+    #modal-buttons button:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Hint button */
+    #hint-button {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-family: "Courier New", monospace;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 150ms, color 150ms;
+    }
+
+    #hint-button:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Hint modal */
+    #hint-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 201;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #hint-modal.hidden {
+      display: none;
+    }
+
+    #hint-modal-content {
+      background: #FFF;
+      border: 2px solid #000;
+      padding: 30px;
+      text-align: center;
+      font-family: "Courier New", monospace;
+      max-width: 400px;
+    }
+
+    #hint-modal-content p {
+      margin-bottom: 20px;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    #hint-close {
+      font-family: "Courier New", monospace;
+      font-size: 14px;
+      padding: 10px 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      cursor: pointer;
+      transition: background 150ms, color 150ms;
+    }
+
+    #hint-close:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      #instruction-box {
+        font-size: 11px;
+        padding: 8px;
+        max-width: calc(100vw - 40px);
+      }
+
+      .definition-box {
+        padding: 20px;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .rectangle {
+        padding: 10px;
+        font-size: 13px;
+        line-height: 1.3;
+      }
+
+      #house-shape {
+        transform: translate(-50%, -50%) scale(0.8);
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Black background -->
+  <div id="background"></div>
+
+  <!-- Grain overlay -->
+  <div id="grain-overlay"></div>
+
+  <!-- Instruction box -->
+  <div id="instruction-box">
+    ACT 3: Your hands language home
+  </div>
+
+  <!-- Hint button -->
+  <div id="hint-button">?</div>
+
+  <!-- Main container -->
+  <div id="main-container">
+    <!-- Definition boxes will be added here -->
+    <!-- House shape will be added here -->
+    <!-- Rectangles will be added here -->
+  </div>
+
+  <!-- Permission modal -->
+  <div id="permission-modal">
+    <div id="modal-content">
+      <p>May you home now</p>
+      <div id="modal-buttons">
+        <button id="btn-yes">Yes</button>
+        <button id="btn-no">No</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hint modal -->
+  <div id="hint-modal" class="hidden">
+    <div id="hint-modal-content">
+      <p>Hint: Drag in order.</p>
+      <button id="hint-close">Close</button>
+    </div>
+  </div>
+
+  <script>
+    // ==================== CONFIGURATION ====================
+    const RECTANGLE_WIDTH = 200;
+    const RECTANGLE_HEIGHT = 60;
+    const SNAP_THRESHOLD = 80; // Distance threshold for snapping (increased for mobile)
+
+    // ==================== TEXT CONTENT ====================
+    const TEXT_SECTIONS = [
+      "It's been twenty years and change",
+      "And change, and you thought it easy",
+      "to close the mouth of a wound",
+      "but now all you think about is love",
+      "And money. And maybe",
+      "you too were elected snake in this garden",
+      "and so you slither against",
+      "the warm hilltop rocks of longing"
+    ];
+
+    // House shape definition (8 lines forming a simple house)
+    // Each line: { x1, y1, x2, y2, angle, length, midX, midY, index }
+    const HOUSE_LINES = [];
+
+    // ==================== STATE ====================
+    let rectangles = [];
+    let houseLinesElements = [];
+    let placedCount = 0;
+    let nextPlacementIndex = 0; // Track which text to show next (sequential placement)
+    let draggedElement = null;
+    let offsetX = 0;
+    let offsetY = 0;
+    let currentHighlightedLine = null;
+
+    // ==================== DOM ELEMENTS ====================
+    const modal = document.getElementById('permission-modal');
+    const btnYes = document.getElementById('btn-yes');
+    const btnNo = document.getElementById('btn-no');
+    const hintButton = document.getElementById('hint-button');
+    const hintModal = document.getElementById('hint-modal');
+    const hintClose = document.getElementById('hint-close');
+    const mainContainer = document.getElementById('main-container');
+
+    // ==================== INITIALIZATION ====================
+    function init() {
+      // Create initial definition boxes
+      createDefinitionBoxes();
+
+      // Modal event listeners
+      btnYes.addEventListener('click', handleYes);
+      btnNo.addEventListener('click', handleNo);
+      hintButton.addEventListener('click', () => {
+        hintModal.classList.remove('hidden');
+      });
+      hintClose.addEventListener('click', () => {
+        hintModal.classList.add('hidden');
+      });
+    }
+
+    // ==================== CREATE DEFINITION BOXES ====================
+    function createDefinitionBoxes() {
+      // Top box
+      const topBox = document.createElement('div');
+      topBox.className = 'definition-box';
+      topBox.id = 'top-box';
+      topBox.innerHTML = `<p><strong>Displacement:</strong> Softer replacement.</p>
+<p><strong>Words:</strong> Language powder ripping the day open like commerce, pieces of melancholy.</p>
+<p><strong>Identity:</strong> The unintended byproduct of the words you use, a lease on an unabridged self.</p>`;
+      
+      // Position at top
+      topBox.style.left = '50%';
+      topBox.style.transform = 'translateX(-50%)';
+      topBox.style.top = '100px';
+      topBox.style.width = '600px';
+      topBox.style.maxWidth = 'calc(100vw - 40px)';
+      
+      mainContainer.appendChild(topBox);
+
+      // Bottom box
+      const bottomBox = document.createElement('div');
+      bottomBox.className = 'definition-box';
+      bottomBox.id = 'bottom-box';
+      bottomBox.innerHTML = `<p><strong>Body:</strong> Incongruency making due with the motherly press of gravity.</p>
+<p><strong>Words:</strong> Rooming into your mouth, pushing sound against the inside of your cheeks like a rougher lover.</p>
+<p><strong>Replacement:</strong> Rougher displacement.</p>`;
+      
+      // Position at bottom
+      bottomBox.style.left = '50%';
+      bottomBox.style.transform = 'translateX(-50%)';
+      bottomBox.style.bottom = '100px';
+      bottomBox.style.width = '600px';
+      bottomBox.style.maxWidth = 'calc(100vw - 40px)';
+      
+      mainContainer.appendChild(bottomBox);
+    }
+
+    // ==================== MODAL HANDLERS ====================
+    function handleYes() {
+      console.log('Starting transformation...');
+      modal.classList.add('hidden');
+      
+      // Fade out text in boxes
+      const topBox = document.getElementById('top-box');
+      const bottomBox = document.getElementById('bottom-box');
+      
+      topBox.classList.add('fading');
+      bottomBox.classList.add('fading');
+      
+      // After 3 seconds, break into rectangles
+      setTimeout(() => {
+        breakIntoRectangles();
+      }, 3000);
+    }
+
+    function handleNo() {
+      modal.querySelector('p').textContent = 'You must home to continue.';
+      modal.querySelector('#modal-buttons').style.display = 'none';
+    }
+
+    // ==================== BREAK INTO RECTANGLES ====================
+    function breakIntoRectangles() {
+      console.log('Breaking into rectangles...');
+      
+      // Get position of definition boxes before removing
+      const topBox = document.getElementById('top-box');
+      const bottomBox = document.getElementById('bottom-box');
+      const topBounds = topBox.getBoundingClientRect();
+      const bottomBounds = bottomBox.getBoundingClientRect();
+      
+      // Remove definition boxes
+      topBox.remove();
+      bottomBox.remove();
+      
+      // Create 8 rectangles - replace the definition boxes
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const centerX = viewportWidth / 2 - RECTANGLE_WIDTH / 2;
+      const bottomY = viewportHeight - 150;
+      
+      for (let i = 0; i < 8; i++) {
+        const rect = document.createElement('div');
+        rect.className = 'rectangle';
+        rect.dataset.index = i;
+        // Don't show text yet - will appear when placed
+        rect.textContent = '';
+        
+        // Start at center of either top or bottom box
+        const startX = centerX;
+        const startY = i < 4 ? topBounds.top + topBounds.height / 2 - RECTANGLE_HEIGHT / 2 : bottomBounds.top + bottomBounds.height / 2 - RECTANGLE_HEIGHT / 2;
+        
+        rect.style.left = `${startX}px`;
+        rect.style.top = `${startY}px`;
+        rect.style.width = `${RECTANGLE_WIDTH}px`;
+        rect.style.height = `${RECTANGLE_HEIGHT}px`;
+        
+        mainContainer.appendChild(rect);
+        rectangles.push({
+          element: rect,
+          index: i,
+          placed: false
+        });
+        
+        // Start falling animation after a brief delay - all fall to bottom center
+        setTimeout(() => {
+          rect.classList.add('falling');
+          rect.style.left = `${centerX}px`;
+          rect.style.top = `${bottomY - (7 - i) * 10}px`; // Stack them slightly
+        }, 100 + i * 100);
+      }
+      
+      // After falling completes, show house and enable dragging
+      setTimeout(() => {
+        createHouseShape();
+        enableDragging();
+      }, 2000);
+    }
+
+    // ==================== CREATE HOUSE SHAPE ====================
+    function createHouseShape() {
+      console.log('Creating house shape...');
+      
+      const houseContainer = document.createElement('div');
+      houseContainer.id = 'house-shape';
+      mainContainer.appendChild(houseContainer);
+      
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Scale house based on viewport
+      const scale = Math.min(viewportWidth / 900, viewportHeight / 900, 0.8);
+      const baseWidth = 400 * scale;
+      const baseHeight = 300 * scale;
+      const roofHeight = 120 * scale;
+      
+      // Define house shape: 2 top slanted, 4 middle vertical, 2 bottom horizontal
+      const lines = [
+        // TOP: 2 slanted roof lines
+        { x1: 0, y1: roofHeight, x2: baseWidth / 2, y2: 0, index: 0, section: 'top' }, // Left roof
+        { x1: baseWidth / 2, y1: 0, x2: baseWidth, y2: roofHeight, index: 1, section: 'top' }, // Right roof
+        
+        // MIDDLE: 4 vertical lines
+        { x1: baseWidth * 0.15, y1: roofHeight, x2: baseWidth * 0.15, y2: roofHeight + baseHeight, index: 2, section: 'middle' },
+        { x1: baseWidth * 0.38, y1: roofHeight, x2: baseWidth * 0.38, y2: roofHeight + baseHeight, index: 3, section: 'middle' },
+        { x1: baseWidth * 0.62, y1: roofHeight, x2: baseWidth * 0.62, y2: roofHeight + baseHeight, index: 4, section: 'middle' },
+        { x1: baseWidth * 0.85, y1: roofHeight, x2: baseWidth * 0.85, y2: roofHeight + baseHeight, index: 5, section: 'middle' },
+        
+        // BOTTOM: 2 horizontal lines
+        { x1: 0, y1: roofHeight + baseHeight, x2: baseWidth / 2, y2: roofHeight + baseHeight, index: 6, section: 'bottom' }, // Left floor
+        { x1: baseWidth / 2, y1: roofHeight + baseHeight, x2: baseWidth, y2: roofHeight + baseHeight, index: 7, section: 'bottom' } // Right floor
+      ];
+      
+      lines.forEach((line) => {
+        const lineEl = document.createElement('div');
+        lineEl.className = 'house-line';
+        lineEl.dataset.lineIndex = line.index;
+        
+        const length = Math.sqrt(
+          Math.pow(line.x2 - line.x1, 2) + Math.pow(line.y2 - line.y1, 2)
+        );
+        const angle = Math.atan2(line.y2 - line.y1, line.x2 - line.x1) * (180 / Math.PI);
+        
+        lineEl.style.width = `${length}px`;
+        lineEl.style.height = '0';
+        lineEl.style.borderBottom = '2px dashed rgba(255, 255, 255, 0.5)';
+        lineEl.style.borderTop = 'none';
+        lineEl.style.borderLeft = 'none';
+        lineEl.style.borderRight = 'none';
+        lineEl.style.left = `${line.x1}px`;
+        lineEl.style.top = `${line.y1}px`;
+        lineEl.style.transform = `rotate(${angle}deg)`;
+        
+        houseContainer.appendChild(lineEl);
+        
+        // Store line data for snapping
+        HOUSE_LINES.push({
+          ...line,
+          angle: angle,
+          length: length,
+          midX: (line.x1 + line.x2) / 2,
+          midY: (line.y1 + line.y2) / 2,
+          element: lineEl
+        });
+      });
+      
+      // Show house
+      setTimeout(() => {
+        houseContainer.classList.add('visible');
+      }, 100);
+    }
+
+    // ==================== ENABLE DRAGGING ====================
+    function enableDragging() {
+      rectangles.forEach(rectData => {
+        const rect = rectData.element;
+        
+        // Mouse events
+        rect.addEventListener('mousedown', startDrag);
+        
+        // Touch events
+        rect.addEventListener('touchstart', startDrag, { passive: false });
+      });
+      
+      // Global move and end events
+      document.addEventListener('mousemove', drag);
+      document.addEventListener('mouseup', endDrag);
+      document.addEventListener('touchmove', drag, { passive: false });
+      document.addEventListener('touchend', endDrag);
+    }
+
+    function startDrag(e) {
+      const rect = e.target.closest('.rectangle');
+      if (!rect || rectangles.find(r => r.element === rect).placed) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      draggedElement = rect;
+      rect.classList.add('dragging');
+      
+      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+      
+      const rectBounds = rect.getBoundingClientRect();
+      offsetX = clientX - rectBounds.left;
+      offsetY = clientY - rectBounds.top;
+      
+      console.log('Started dragging rectangle');
+    }
+
+    function drag(e) {
+      if (!draggedElement) return;
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+      const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+      
+      draggedElement.style.left = `${clientX - offsetX}px`;
+      draggedElement.style.top = `${clientY - offsetY}px`;
+      
+      // Highlight closest available line
+      highlightClosestLine(clientX, clientY);
+    }
+    
+    function highlightClosestLine(clientX, clientY) {
+      const houseContainer = document.getElementById('house-shape');
+      if (!houseContainer) return;
+      
+      const houseContainerBounds = houseContainer.getBoundingClientRect();
+      
+      let closestLine = null;
+      let closestDistance = Infinity;
+      
+      HOUSE_LINES.forEach(line => {
+        // Check if this line is already occupied
+        const alreadyPlaced = rectangles.some(
+          r => r.placed && r.lineIndex === line.index
+        );
+        if (alreadyPlaced) return;
+        
+        const lineMidX = houseContainerBounds.left + line.midX;
+        const lineMidY = houseContainerBounds.top + line.midY;
+        
+        const distance = Math.sqrt(
+          Math.pow(clientX - lineMidX, 2) + Math.pow(clientY - lineMidY, 2)
+        );
+        
+        if (distance < closestDistance && distance < SNAP_THRESHOLD) {
+          closestDistance = distance;
+          closestLine = line;
+        }
+      });
+      
+      // Remove previous highlight
+      if (currentHighlightedLine && currentHighlightedLine !== closestLine) {
+        currentHighlightedLine.element.classList.remove('highlight');
+      }
+      
+      // Add new highlight
+      if (closestLine) {
+        closestLine.element.classList.add('highlight');
+        currentHighlightedLine = closestLine;
+      } else {
+        currentHighlightedLine = null;
+      }
+    }
+
+    function endDrag(e) {
+      if (!draggedElement) return;
+      
+      const rect = draggedElement;
+      const rectData = rectangles.find(r => r.element === rect);
+      const rectIndex = parseInt(rect.dataset.index);
+      
+      // Check if near any house line
+      const rectBounds = rect.getBoundingClientRect();
+      const rectCenterX = rectBounds.left + rectBounds.width / 2;
+      const rectCenterY = rectBounds.top + rectBounds.height / 2;
+      
+      const houseContainer = document.getElementById('house-shape');
+      const houseContainerBounds = houseContainer.getBoundingClientRect();
+      
+      let closestLine = null;
+      let closestDistance = Infinity;
+      
+      HOUSE_LINES.forEach(line => {
+        // Check if this line is already occupied
+        const alreadyPlaced = rectangles.some(
+          r => r.placed && r.lineIndex === line.index
+        );
+        if (alreadyPlaced) return;
+        
+        const lineMidX = houseContainerBounds.left + line.midX;
+        const lineMidY = houseContainerBounds.top + line.midY;
+        
+        const distance = Math.sqrt(
+          Math.pow(rectCenterX - lineMidX, 2) + Math.pow(rectCenterY - lineMidY, 2)
+        );
+        
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestLine = line;
+        }
+      });
+      
+      if (closestLine && closestDistance < SNAP_THRESHOLD) {
+        // Snap to line
+        snapToLine(rect, rectData, closestLine);
+      }
+      
+      // Clear highlight
+      if (currentHighlightedLine) {
+        currentHighlightedLine.element.classList.remove('highlight');
+        currentHighlightedLine = null;
+      }
+      
+      rect.classList.remove('dragging');
+      draggedElement = null;
+    }
+
+    function snapToLine(rect, rectData, line) {
+      console.log(`Snapping rectangle to line ${line.index}, showing text #${nextPlacementIndex}: "${TEXT_SECTIONS[nextPlacementIndex]}"`);
+      
+      const houseContainer = document.getElementById('house-shape');
+      const houseContainerBounds = houseContainer.getBoundingClientRect();
+      
+      // Position rectangle at line's midpoint
+      const lineMidX = houseContainerBounds.left + line.midX;
+      const lineMidY = houseContainerBounds.top + line.midY;
+      
+      rect.style.left = `${lineMidX - RECTANGLE_WIDTH / 2}px`;
+      rect.style.top = `${lineMidY - RECTANGLE_HEIGHT / 2}px`;
+      rect.style.transform = `rotate(${line.angle}deg)`;
+      
+      // Show text from sequential index
+      rect.textContent = TEXT_SECTIONS[nextPlacementIndex];
+      
+      // Mark as placed
+      rect.classList.add('placed');
+      rectData.placed = true;
+      rectData.lineIndex = line.index;
+      rectData.textIndex = nextPlacementIndex;
+      
+      nextPlacementIndex++;
+      placedCount++;
+      
+      // Check if all placed
+      if (placedCount === 8) {
+        setTimeout(() => {
+          onAllPlaced();
+        }, 1000);
+      }
+    }
+
+    function onAllPlaced() {
+      console.log('All rectangles placed! House complete.');
+      // Could add completion animation or transition to next act
+    }
+
+    // ==================== START ====================
+    init();
+  </script>
+</body>
+</html>
+
