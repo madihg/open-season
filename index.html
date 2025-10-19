@@ -71,6 +71,76 @@
       font-size: 13px;
       z-index: 100;
       line-height: 1.4;
+      max-width: calc(100vw - 160px);
+    }
+
+    /* Navigation button */
+    #nav-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #999;
+      color: #666;
+      border: 1px solid #000;
+      padding: 10px 20px;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      z-index: 100;
+      cursor: not-allowed;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #nav-button.enabled {
+      background: #FFF;
+      color: #000;
+      cursor: pointer;
+    }
+
+    #nav-button.enabled:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Dark mode toggle */
+    #dark-mode-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 150ms, color 150ms;
+    }
+
+    #dark-mode-toggle:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+      #instruction-box {
+        max-width: calc(100vw - 40px);
+        top: 20px;
+      }
+
+      #nav-button {
+        top: auto;
+        right: auto;
+        left: 20px;
+        bottom: 70px;
+      }
     }
 
     /* Hint button */
@@ -278,6 +348,12 @@
     ACT 1: Your body words a beginning
   </div>
 
+  <!-- Navigation button -->
+  <a id="nav-button" href="act2.html">cross</a>
+
+  <!-- Dark mode toggle -->
+  <div id="dark-mode-toggle">☀</div>
+
   <!-- Hint button -->
   <div id="hint-button">?</div>
 
@@ -353,6 +429,8 @@
     const hintButton = document.getElementById('hint-button');
     const hintModal = document.getElementById('hint-modal');
     const hintClose = document.getElementById('hint-close');
+    const navButton = document.getElementById('nav-button');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
     const wordsGrid = document.getElementById('words-grid');
     const wordColumns = Array.from(document.querySelectorAll('.word-column'));
     const measurementSpan = document.getElementById('measurement-span');
@@ -376,6 +454,24 @@
       });
       hintClose.addEventListener('click', () => {
         hintModal.classList.add('hidden');
+      });
+      
+      // Dark mode toggle
+      darkModeToggle.addEventListener('click', () => {
+        if (darkModeToggle.textContent === '☀') {
+          darkModeToggle.textContent = '☁︎';
+          // Dark mode functionality to be implemented
+        } else {
+          darkModeToggle.textContent = '☀';
+          // Light mode functionality to be implemented
+        }
+      });
+      
+      // Prevent nav button click when disabled
+      navButton.addEventListener('click', (e) => {
+        if (!navButton.classList.contains('enabled')) {
+          e.preventDefault();
+        }
       });
     }
 
@@ -573,6 +669,12 @@
       });
       
       nextIndex++;
+      
+      // Enable nav button when all words are revealed
+      if (nextIndex === tokens.length) {
+        console.log('✓ All words revealed! Enabling navigation.');
+        navButton.classList.add('enabled');
+      }
     }
 
     // ==================== START ====================

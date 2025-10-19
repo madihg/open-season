@@ -70,6 +70,75 @@
       font-size: 13px;
       z-index: 100;
       line-height: 1.4;
+      max-width: calc(100vw - 160px);
+    }
+
+    /* Navigation button */
+    #nav-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #999;
+      color: #666;
+      border: 1px solid #000;
+      padding: 10px 20px;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      z-index: 100;
+      cursor: not-allowed;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #nav-button.enabled {
+      background: #FFF;
+      color: #000;
+      cursor: pointer;
+    }
+
+    #nav-button.enabled:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Dark mode toggle */
+    #dark-mode-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 150ms, color 150ms;
+    }
+
+    #dark-mode-toggle:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+      #instruction-box {
+        max-width: calc(100vw - 40px);
+      }
+
+      #nav-button {
+        top: auto;
+        right: auto;
+        left: 20px;
+        bottom: 70px;
+      }
     }
 
     /* Words container */
@@ -324,6 +393,12 @@
     ACT 2: Your voice glossaries belongings
   </div>
 
+  <!-- Navigation button -->
+  <a id="nav-button" href="act3.html">breathe</a>
+
+  <!-- Dark mode toggle -->
+  <div id="dark-mode-toggle">☀</div>
+
   <!-- Hint button -->
   <div id="hint-button">?</div>
 
@@ -394,6 +469,8 @@
     const hintButton = document.getElementById('hint-button');
     const hintModal = document.getElementById('hint-modal');
     const hintClose = document.getElementById('hint-close');
+    const navButton = document.getElementById('nav-button');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
     const wordsGrid = document.getElementById('words-grid');
     const wordColumns = Array.from(document.querySelectorAll('.word-column'));
     const measurementSpan = document.getElementById('measurement-span');
@@ -416,6 +493,24 @@
       });
       hintClose.addEventListener('click', () => {
         hintModal.classList.add('hidden');
+      });
+      
+      // Dark mode toggle
+      darkModeToggle.addEventListener('click', () => {
+        if (darkModeToggle.textContent === '☀') {
+          darkModeToggle.textContent = '☁︎';
+          // Dark mode functionality to be implemented
+        } else {
+          darkModeToggle.textContent = '☀';
+          // Light mode functionality to be implemented
+        }
+      });
+      
+      // Prevent nav button click when disabled
+      navButton.addEventListener('click', (e) => {
+        if (!navButton.classList.contains('enabled')) {
+          e.preventDefault();
+        }
       });
     }
 
@@ -597,13 +692,13 @@
 
       // Wait for fade out, then create definition boxes
       setTimeout(() => {
-        createDefinitionBox('top', topBounds, `<p><strong>Displacement:</strong> Softer replacement.</p>
-<p><strong>Words:</strong> Language powder ripping the day open like commerce, pieces of melancholy.</p>
-<p><strong>Identity:</strong> The unintended byproduct of the words you use, a lease on an unabridged self.</p>`);
+        createDefinitionBox('top', topBounds, `<p><strong>Displacement</strong> <em>noun</em><br>Softer replacement.</p>
+<p><strong>Words</strong> <em>noun, plural</em><br>Language powder ripping the day open like commerce, pieces of melancholy.</p>
+<p><strong>Identity</strong> <em>noun</em><br>The unintended byproduct of the words you use, a lease on an unabridged self.</p>`);
         
-        createDefinitionBox('bottom', bottomBounds, `<p><strong>Body:</strong> Incongruency making due with the motherly press of gravity.</p>
-<p><strong>Words:</strong> Rooming into your mouth, pushing sound against the inside of your cheeks like a rougher lover.</p>
-<p><strong>Replacement:</strong> Rougher displacement.</p>`);
+        createDefinitionBox('bottom', bottomBounds, `<p><strong>Body</strong> <em>noun</em><br>Incongruency making due with the motherly press of gravity.</p>
+<p><strong>Words</strong> <em>noun, plural</em><br>Rooming into your mouth, pushing sound against the inside of your cheeks like a rougher lover.</p>
+<p><strong>Replacement</strong> <em>noun</em><br>Rougher displacement.</p>`);
         
         // Hide word columns completely
         setTimeout(() => {
@@ -638,6 +733,7 @@
       const box = document.createElement('div');
       box.className = 'definition-box';
       box.innerHTML = htmlContent;
+      box.dataset.side = side;
       
       // Ensure boxes stay on screen with proper padding
       const minTop = 120; // Below instruction box
@@ -658,6 +754,13 @@
       // Trigger fade in
       setTimeout(() => {
         box.classList.add('visible');
+        
+        // Check if both boxes are visible - if so, enable nav button
+        const allBoxes = document.querySelectorAll('.definition-box.visible');
+        if (allBoxes.length === 2) {
+          console.log('✓ Both definition boxes visible! Enabling navigation.');
+          navButton.classList.add('enabled');
+        }
       }, 100);
     }
 

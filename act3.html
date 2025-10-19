@@ -71,6 +71,75 @@
       font-size: 13px;
       z-index: 100;
       line-height: 1.4;
+      max-width: calc(100vw - 160px);
+    }
+
+    /* Navigation button */
+    #nav-button {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #999;
+      color: #666;
+      border: 1px solid #000;
+      padding: 10px 20px;
+      font-family: "Courier New", monospace;
+      font-size: 13px;
+      z-index: 100;
+      cursor: not-allowed;
+      text-decoration: none;
+      display: inline-block;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    #nav-button.enabled {
+      background: #FFF;
+      color: #000;
+      cursor: pointer;
+    }
+
+    #nav-button.enabled:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Dark mode toggle */
+    #dark-mode-toggle {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #FFF;
+      color: #000;
+      border: 1px solid #000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: background 150ms, color 150ms;
+    }
+
+    #dark-mode-toggle:hover {
+      background: #000;
+      color: #FFF;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+      #instruction-box {
+        max-width: calc(100vw - 40px);
+      }
+
+      #nav-button {
+        top: auto;
+        right: auto;
+        left: 20px;
+        bottom: 70px;
+      }
     }
 
     /* Main container */
@@ -326,7 +395,12 @@
       }
 
       #house-shape {
-        transform: translate(-50%, -50%) scale(0.8);
+        transform: translate(-50%, -50%) scale(0.7);
+      }
+      
+      .rectangle {
+        width: 180px;
+        height: 50px;
       }
     }
   </style>
@@ -342,6 +416,12 @@
   <div id="instruction-box">
     ACT 3: Your hands language home
   </div>
+
+  <!-- Navigation button -->
+  <a id="nav-button" href="#">place</a>
+
+  <!-- Dark mode toggle -->
+  <div id="dark-mode-toggle">☀</div>
 
   <!-- Hint button -->
   <div id="hint-button">?</div>
@@ -403,6 +483,7 @@
     let offsetX = 0;
     let offsetY = 0;
     let currentHighlightedLine = null;
+    let baseZIndex = 50; // Base z-index for placed rectangles
 
     // ==================== DOM ELEMENTS ====================
     const modal = document.getElementById('permission-modal');
@@ -411,6 +492,8 @@
     const hintButton = document.getElementById('hint-button');
     const hintModal = document.getElementById('hint-modal');
     const hintClose = document.getElementById('hint-close');
+    const navButton = document.getElementById('nav-button');
+    const darkModeToggle = document.getElementById('dark-mode-toggle');
     const mainContainer = document.getElementById('main-container');
 
     // ==================== INITIALIZATION ====================
@@ -426,6 +509,24 @@
       });
       hintClose.addEventListener('click', () => {
         hintModal.classList.add('hidden');
+      });
+      
+      // Dark mode toggle
+      darkModeToggle.addEventListener('click', () => {
+        if (darkModeToggle.textContent === '☀') {
+          darkModeToggle.textContent = '☁︎';
+          // Dark mode functionality to be implemented
+        } else {
+          darkModeToggle.textContent = '☀';
+          // Light mode functionality to be implemented
+        }
+      });
+      
+      // Prevent nav button click when disabled
+      navButton.addEventListener('click', (e) => {
+        if (!navButton.classList.contains('enabled')) {
+          e.preventDefault();
+        }
       });
     }
 
@@ -558,11 +659,11 @@
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
       
-      // Scale house based on viewport
-      const scale = Math.min(viewportWidth / 900, viewportHeight / 900, 0.8);
-      const baseWidth = 400 * scale;
-      const baseHeight = 300 * scale;
-      const roofHeight = 120 * scale;
+      // Scale house based on viewport - made larger
+      const scale = Math.min(viewportWidth / 700, viewportHeight / 700, 1.0);
+      const baseWidth = 450 * scale;
+      const baseHeight = 350 * scale;
+      const roofHeight = 140 * scale;
       
       // Define house shape: 2 top slanted, 4 middle vertical, 2 bottom horizontal
       const lines = [
@@ -783,6 +884,10 @@
       rect.style.top = `${lineMidY - RECTANGLE_HEIGHT / 2}px`;
       rect.style.transform = `rotate(${line.angle}deg)`;
       
+      // Set z-index so latest placed is on top
+      baseZIndex++;
+      rect.style.zIndex = baseZIndex;
+      
       // Show text from sequential index
       rect.textContent = TEXT_SECTIONS[nextPlacementIndex];
       
@@ -804,8 +909,8 @@
     }
 
     function onAllPlaced() {
-      console.log('All rectangles placed! House complete.');
-      // Could add completion animation or transition to next act
+      console.log('✓ All rectangles placed! House complete. Enabling navigation.');
+      navButton.classList.add('enabled');
     }
 
     // ==================== START ====================
