@@ -161,6 +161,7 @@
       #instruction-box {
         max-width: calc(100vw - 40px);
         top: 20px;
+        font-size: 11px;
       }
 
       #nav-button {
@@ -168,19 +169,28 @@
         right: auto;
         left: 20px;
         bottom: 70px;
+        font-size: 11px;
+        padding: 8px 12px;
+      }
+
+      #words-container {
+        padding: 0 10px;
       }
 
       #words-grid {
-        column-gap: 12px;
+        column-gap: 8px;
+        grid-template-columns: repeat(6, minmax(0, 1fr));
       }
 
       .word-column {
-        gap: 4px;
+        gap: 3px;
       }
 
       .word-box {
-        font-size: 13px;
-        padding: 4px 7px;
+        font-size: 11px;
+        padding: 3px 5px;
+        word-break: break-word;
+        min-width: 0;
       }
     }
 
