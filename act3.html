@@ -219,8 +219,8 @@
     /* House shape with dotted lines */
     #house-shape {
       position: fixed;
-      left: 50%;
-      top: 50vh;
+      left: calc(50% - 100px);
+      top: calc(50vh + 100px);
       transform: translate(-50%, -50%);
       opacity: 0;
       transition: opacity 1s ease-in;
@@ -616,11 +616,11 @@
       topBox.remove();
       bottomBox.remove();
       
-      // Create 8 rectangles - replace the definition boxes
+      // Create 8 rectangles - 4 from top box (2x2 grid), 4 from bottom box (2x2 grid)
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const centerX = viewportWidth / 2 - RECTANGLE_WIDTH / 2;
       const bottomY = viewportHeight - 150;
+      const gap = 10; // Gap between rectangles in the 2x2 grid
       
       for (let i = 0; i < 8; i++) {
         const rect = document.createElement('div');
@@ -629,9 +629,26 @@
         // Don't show text yet - will appear when placed
         rect.textContent = '';
         
-        // Start at center of either top or bottom box
-        const startX = centerX;
-        const startY = i < 4 ? topBounds.top + topBounds.height / 2 - RECTANGLE_HEIGHT / 2 : bottomBounds.top + bottomBounds.height / 2 - RECTANGLE_HEIGHT / 2;
+        // Determine if this is from top box (0-3) or bottom box (4-7)
+        const isTopBox = i < 4;
+        const localIndex = i % 4; // 0-3 within each box
+        
+        // Calculate 2x2 grid position (0=top-left, 1=top-right, 2=bottom-left, 3=bottom-right)
+        const col = localIndex % 2; // 0 or 1
+        const row = Math.floor(localIndex / 2); // 0 or 1
+        
+        // Get parent box bounds
+        const parentBounds = isTopBox ? topBounds : bottomBounds;
+        
+        // Center the 2x2 grid within the parent box
+        const gridWidth = RECTANGLE_WIDTH * 2 + gap;
+        const gridHeight = RECTANGLE_HEIGHT * 2 + gap;
+        const gridStartX = parentBounds.left + (parentBounds.width - gridWidth) / 2;
+        const gridStartY = parentBounds.top + (parentBounds.height - gridHeight) / 2;
+        
+        // Position within the 2x2 grid
+        const startX = gridStartX + col * (RECTANGLE_WIDTH + gap);
+        const startY = gridStartY + row * (RECTANGLE_HEIGHT + gap);
         
         rect.style.left = `${startX}px`;
         rect.style.top = `${startY}px`;
@@ -645,9 +662,11 @@
           placed: false
         });
         
-        // Start falling animation after a brief delay - all fall to bottom center
+        // Start falling animation after a brief delay
         setTimeout(() => {
           rect.classList.add('falling');
+          // All fall to bottom, stacked
+          const centerX = viewportWidth / 2 - RECTANGLE_WIDTH / 2;
           rect.style.left = `${centerX}px`;
           rect.style.top = `${bottomY - (7 - i) * 10}px`; // Stack them slightly
         }, 100 + i * 100);
