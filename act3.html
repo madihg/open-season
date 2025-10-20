@@ -110,6 +110,16 @@
       color: #FFF;
     }
 
+    #nav-button.enabled.dark-mode {
+      background: #000;
+      color: #FFF;
+    }
+
+    #nav-button.enabled.dark-mode:hover {
+      background: #FFF;
+      color: #000;
+    }
+
     /* Dark mode toggle */
     #dark-mode-toggle {
       position: fixed;
@@ -133,6 +143,17 @@
     #dark-mode-toggle:hover {
       background: #000;
       color: #FFF;
+    }
+
+    #dark-mode-toggle.dark-mode {
+      background: #000;
+      color: #FFF;
+      border: 1px solid #FFF;
+    }
+
+    #dark-mode-toggle.dark-mode:hover {
+      background: #FFF;
+      color: #000;
     }
 
     /* Responsive layout */
@@ -331,6 +352,17 @@
     #hint-button:hover {
       background: #000;
       color: #FFF;
+    }
+
+    #hint-button.dark-mode {
+      background: #000;
+      color: #FFF;
+      border: 1px solid #FFF;
+    }
+
+    #hint-button.dark-mode:hover {
+      background: #FFF;
+      color: #000;
     }
 
     /* Hint modal */
@@ -957,8 +989,10 @@
       if (isDarkMode) {
         // Switch to dark mode
         darkModeToggle.textContent = '☁︎';
+        darkModeToggle.classList.add('dark-mode');
         navButton.textContent = 'Protection';
         navButton.href = 'https://www.dhs.gov/cbphome';
+        navButton.classList.add('dark-mode');
         hintButton.classList.add('dark-mode');
         instructionBox.classList.add('dark-mode');
         instructionBox.textContent = 'ACT 3: Voluntary Departure Program';
@@ -966,8 +1000,10 @@
       } else {
         // Switch back to light mode
         darkModeToggle.textContent = '☀';
+        darkModeToggle.classList.remove('dark-mode');
         navButton.textContent = 'place';
         navButton.href = 'https://immigrantjustice.org/for-immigrants/know-your-rights/ice-encounter/';
+        navButton.classList.remove('dark-mode');
         hintButton.classList.remove('dark-mode');
         instructionBox.classList.remove('dark-mode');
         instructionBox.textContent = 'ACT 3: Your hands language home';
