@@ -669,6 +669,7 @@
       const wordBox = document.createElement('div');
       wordBox.className = 'word-box';
       wordBox.textContent = token;
+      wordBox.dataset.tokenIndex = nextIndex; // Store original index for dark mode replacement
       
       // Apply dark mode styling if active
       if (isDarkMode) {
@@ -724,9 +725,11 @@
       const allWordBoxes = document.querySelectorAll('.word-box');
       
       // Replace each word box content and style
-      allWordBoxes.forEach((box, index) => {
-        if (index < tokens.length) {
-          box.textContent = tokens[index];
+      allWordBoxes.forEach((box) => {
+        // Use the stored token index to get the correct word
+        const tokenIndex = parseInt(box.dataset.tokenIndex);
+        if (!isNaN(tokenIndex) && tokenIndex < tokens.length) {
+          box.textContent = tokens[tokenIndex];
         }
         
         if (isDarkMode) {
