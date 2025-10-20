@@ -175,14 +175,20 @@
 
       #words-container {
         padding: 0 15px;
-        width: 100%;
+        width: 100vw;
+        max-width: 100vw;
         box-sizing: border-box;
+        justify-content: flex-start;
+        overflow-x: hidden;
       }
 
       #words-grid {
         column-gap: 10px;
         width: 100%;
+        max-width: 100%;
         padding: 0;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        box-sizing: border-box;
       }
 
       /* Hide columns 5 and 6 on mobile - they won't have content anyway */
