@@ -127,25 +127,24 @@
       color: #FFF;
     }
 
-    /* Volume indicator */
-    #volume-indicator {
+    /* Audio visualizer */
+    #audio-visualizer {
       position: fixed;
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 200px;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.2);
       z-index: 150;
-      border-radius: 2px;
-      overflow: hidden;
+      background: #000;
+      border: 1px solid #FFF;
+      border-radius: 4px;
+      padding: 10px;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
     }
 
-    #volume-bar {
-      height: 100%;
-      width: 0%;
-      background: #FFF;
-      transition: width 0.1s ease-out;
+    #audio-visualizer.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
     /* Responsive layout */
@@ -161,8 +160,8 @@
         bottom: 70px;
       }
 
-      #volume-indicator {
-        width: 150px;
+      #audio-visualizer {
+        padding: 8px;
       }
     }
 
@@ -427,9 +426,9 @@
   <!-- Hint button -->
   <div id="hint-button">?</div>
 
-  <!-- Volume indicator -->
-  <div id="volume-indicator">
-    <div id="volume-bar"></div>
+  <!-- Audio visualizer -->
+  <div id="audio-visualizer">
+    <canvas id="visualizer-canvas" width="300" height="80"></canvas>
   </div>
 
   <!-- Permission modal -->
@@ -613,8 +612,8 @@
         // Set up Web Audio API
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         analyser = audioContext.createAnalyser();
-        analyser.fftSize = 256;
-        analyser.smoothingTimeConstant = 0.8;
+        analyser.fftSize = 2048; // Higher for smoother waveform
+        analyser.smoothingTimeConstant = 0.7;
         
         microphone = audioContext.createMediaStreamSource(stream);
         microphone.connect(analyser);
@@ -638,7 +637,9 @@
     // ==================== AUDIO MONITORING ====================
     function startAudioMonitoring() {
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
-      const volumeBar = document.getElementById('volume-bar');
+      const canvas = document.getElementById('visualizer-canvas');
+      const canvasCtx = canvas.getContext('2d');
+      const visualizerContainer = document.getElementById('audio-visualizer');
       let lastTime = performance.now();
 
       function loop() {
@@ -646,16 +647,42 @@
         const delta = now - lastTime;
         lastTime = now;
 
-        // Get volume level
-        analyser.getByteFrequencyData(dataArray);
+        // Get waveform data for visualization
+        analyser.getByteTimeDomainData(dataArray);
+        
+        // Draw waveform
+        canvasCtx.fillStyle = '#000';
+        canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        canvasCtx.lineWidth = 2;
+        canvasCtx.strokeStyle = '#FFF';
+        canvasCtx.beginPath();
+        
+        const sliceWidth = canvas.width / dataArray.length;
+        let x = 0;
+        
+        for (let i = 0; i < dataArray.length; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = (v * canvas.height) / 2;
+          
+          if (i === 0) {
+            canvasCtx.moveTo(x, y);
+          } else {
+            canvasCtx.lineTo(x, y);
+          }
+          
+          x += sliceWidth;
+        }
+        
+        canvasCtx.lineTo(canvas.width, canvas.height / 2);
+        canvasCtx.stroke();
+        
+        // Calculate average volume for curtain animation
         let sum = 0;
         for (let i = 0; i < dataArray.length; i++) {
-          sum += dataArray[i];
+          sum += Math.abs(dataArray[i] - 128);
         }
-        const average = sum / dataArray.length / 255; // Normalize to 0-1
-        
-        // Update volume indicator
-        volumeBar.style.width = `${average * 100}%`;
+        const average = sum / dataArray.length / 128; // Normalize to 0-1
         
         // Update EMA
         volumeEMA = volumeEMA * (1 - VOICE_SMOOTHING) + average * VOICE_SMOOTHING;
@@ -677,6 +704,11 @@
           if (progress >= 1 && !curtainsOpen) {
             curtainsOpen = true;
             console.log('✓ Curtains fully open!');
+            
+            // Hide visualizer when curtains open
+            const visualizerContainer = document.getElementById('audio-visualizer');
+            visualizerContainer.classList.add('hidden');
+            
             setTimeout(() => {
               transformToDefinitions();
             }, 3000); // Wait for animation to complete
