@@ -71,6 +71,13 @@
       z-index: 100;
       line-height: 1.4;
       max-width: calc(100vw - 160px);
+      transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    #instruction-box.dark-mode {
+      background: #000;
+      color: #FFF;
+      border: 1px solid #FFF;
     }
 
     /* Navigation button */
@@ -844,17 +851,22 @@
 
     // ==================== DARK MODE TOGGLE ====================
     function toggleDarkMode() {
+      const instructionBox = document.getElementById('instruction-box');
       if (isDarkMode) {
         // Switch to dark mode
         darkModeToggle.textContent = '☁︎';
         navButton.textContent = 'Borders';
-        document.getElementById('instruction-box').textContent = 'ACT 2: CBP Home Mobile App';
+        hintButton.classList.add('dark-mode');
+        instructionBox.classList.add('dark-mode');
+        instructionBox.textContent = 'ACT 2: CBP Home Mobile App';
         currentText = ORIGINAL_TEXT; // Keep word boxes as original for now
       } else {
         // Switch back to light mode
         darkModeToggle.textContent = '☀';
         navButton.textContent = 'breathe';
-        document.getElementById('instruction-box').textContent = 'ACT 2: Your voice glossaries belongings';
+        hintButton.classList.remove('dark-mode');
+        instructionBox.classList.remove('dark-mode');
+        instructionBox.textContent = 'ACT 2: Your voice glossaries belongings';
         currentText = ORIGINAL_TEXT;
       }
       

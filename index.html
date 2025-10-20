@@ -72,6 +72,13 @@
       z-index: 100;
       line-height: 1.4;
       max-width: calc(100vw - 160px);
+      transition: background 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+    #instruction-box.dark-mode {
+      background: #000;
+      color: #FFF;
+      border: 1px solid #FFF;
     }
 
     /* Navigation button */
@@ -697,19 +704,22 @@
 
     // ==================== DARK MODE TOGGLE ====================
     function toggleDarkMode() {
+      const instructionBox = document.getElementById('instruction-box');
       if (isDarkMode) {
         // Switch to dark mode
         darkModeToggle.textContent = '☁︎';
         navButton.textContent = 'Customs &';
         hintButton.classList.add('dark-mode');
-        document.getElementById('instruction-box').textContent = 'ACT 1: Department of Homeland Security';
+        instructionBox.classList.add('dark-mode');
+        instructionBox.textContent = 'ACT 1: Department of Homeland Security';
         currentText = DARK_TEXT;
       } else {
         // Switch back to light mode
         darkModeToggle.textContent = '☀';
         navButton.textContent = 'cross';
         hintButton.classList.remove('dark-mode');
-        document.getElementById('instruction-box').textContent = 'ACT 1: Your body words a beginning';
+        instructionBox.classList.remove('dark-mode');
+        instructionBox.textContent = 'ACT 1: Your body words a beginning';
         currentText = ORIGINAL_TEXT;
       }
       
