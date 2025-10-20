@@ -127,6 +127,27 @@
       color: #FFF;
     }
 
+    /* Volume indicator */
+    #volume-indicator {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 200px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.2);
+      z-index: 150;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    #volume-bar {
+      height: 100%;
+      width: 0%;
+      background: #FFF;
+      transition: width 0.1s ease-out;
+    }
+
     /* Responsive layout */
     @media (max-width: 768px) {
       #instruction-box {
@@ -138,6 +159,10 @@
         right: auto;
         left: 20px;
         bottom: 70px;
+      }
+
+      #volume-indicator {
+        width: 150px;
       }
     }
 
@@ -402,6 +427,11 @@
   <!-- Hint button -->
   <div id="hint-button">?</div>
 
+  <!-- Volume indicator -->
+  <div id="volume-indicator">
+    <div id="volume-bar"></div>
+  </div>
+
   <!-- Permission modal -->
   <div id="permission-modal">
     <div id="modal-content">
@@ -608,6 +638,7 @@
     // ==================== AUDIO MONITORING ====================
     function startAudioMonitoring() {
       const dataArray = new Uint8Array(analyser.frequencyBinCount);
+      const volumeBar = document.getElementById('volume-bar');
       let lastTime = performance.now();
 
       function loop() {
@@ -622,6 +653,9 @@
           sum += dataArray[i];
         }
         const average = sum / dataArray.length / 255; // Normalize to 0-1
+        
+        // Update volume indicator
+        volumeBar.style.width = `${average * 100}%`;
         
         // Update EMA
         volumeEMA = volumeEMA * (1 - VOICE_SMOOTHING) + average * VOICE_SMOOTHING;
@@ -745,10 +779,16 @@
       const minTop = 120; // Below instruction box
       const minLeft = 20;
       const maxWidth = window.innerWidth - 40;
+      const maxBottom = window.innerHeight - 100; // Keep some space from bottom
       
-      const finalTop = Math.max(bounds.top, minTop);
+      let finalTop = Math.max(bounds.top, minTop);
       const finalLeft = Math.max(bounds.left, minLeft);
       const finalWidth = Math.min(bounds.width, maxWidth);
+      
+      // For bottom box, ensure it doesn't go off screen
+      if (side === 'bottom' && finalTop + bounds.height > maxBottom) {
+        finalTop = maxBottom - bounds.height;
+      }
       
       box.style.left = `${finalLeft}px`;
       box.style.top = `${finalTop}px`;

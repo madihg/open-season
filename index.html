@@ -161,12 +161,23 @@
       justify-content: center;
       cursor: pointer;
       z-index: 100;
-      transition: background 150ms, color 150ms;
+      transition: background 150ms, color 150ms, border 150ms;
     }
 
     #hint-button:hover {
       background: #000;
       color: #FFF;
+    }
+
+    #hint-button.dark-mode {
+      background: #000;
+      color: #FFF;
+      border: 1px solid #FFF;
+    }
+
+    #hint-button.dark-mode:hover {
+      background: #FFF;
+      color: #000;
     }
 
     /* Words container */
@@ -658,6 +669,13 @@
       const wordBox = document.createElement('div');
       wordBox.className = 'word-box';
       wordBox.textContent = token;
+      
+      // Apply dark mode styling if active
+      if (isDarkMode) {
+        wordBox.style.background = '#000';
+        wordBox.style.color = '#FFF';
+      }
+      
       column.appendChild(wordBox);
       
       // Trigger reveal animation
@@ -682,12 +700,14 @@
         // Switch to dark mode
         darkModeToggle.textContent = '☁︎';
         navButton.textContent = 'Customs &';
+        hintButton.classList.add('dark-mode');
         document.getElementById('instruction-box').textContent = 'ACT 1: Department of Homeland Security';
         currentText = DARK_TEXT;
       } else {
         // Switch back to light mode
         darkModeToggle.textContent = '☀';
         navButton.textContent = 'cross';
+        hintButton.classList.remove('dark-mode');
         document.getElementById('instruction-box').textContent = 'ACT 1: Your body words a beginning';
         currentText = ORIGINAL_TEXT;
       }

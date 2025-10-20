@@ -220,12 +220,13 @@
     #house-shape {
       position: fixed;
       left: 50%;
-      top: 50%;
+      top: 50vh;
       transform: translate(-50%, -50%);
       opacity: 0;
       transition: opacity 1s ease-in;
       pointer-events: none;
       z-index: 5;
+      margin: 0;
     }
 
     #house-shape.visible {
@@ -418,7 +419,7 @@
   </div>
 
   <!-- Navigation button -->
-  <a id="nav-button" href="#">place</a>
+  <a id="nav-button" href="https://immigrantjustice.org/for-immigrants/know-your-rights/ice-encounter/">place</a>
 
   <!-- Dark mode toggle -->
   <div id="dark-mode-toggle">☀</div>
@@ -930,12 +931,14 @@
         // Switch to dark mode
         darkModeToggle.textContent = '☁︎';
         navButton.textContent = 'Protection';
+        navButton.href = 'https://www.dhs.gov/cbphome';
         document.getElementById('instruction-box').textContent = 'ACT 3: Voluntary Departure Program';
         TEXT_SECTIONS = [...DARK_TEXT_SECTIONS];
       } else {
         // Switch back to light mode
         darkModeToggle.textContent = '☀';
         navButton.textContent = 'place';
+        navButton.href = 'https://immigrantjustice.org/for-immigrants/know-your-rights/ice-encounter/';
         document.getElementById('instruction-box').textContent = 'ACT 3: Your hands language home';
         TEXT_SECTIONS = [...ORIGINAL_SECTIONS];
       }
@@ -967,6 +970,7 @@
         if (isDarkMode) {
           rect.style.background = '#000';
           rect.style.color = '#FFF';
+          rect.style.border = '1px solid #FFF';
           // Update text if placed
           if (rectData.placed && rectData.textIndex !== undefined) {
             rect.textContent = TEXT_SECTIONS[rectData.textIndex] || '';
@@ -974,6 +978,7 @@
         } else {
           rect.style.background = '#FFF';
           rect.style.color = '#000';
+          rect.style.border = '1px solid #000';
           if (rectData.placed && rectData.textIndex !== undefined) {
             rect.textContent = TEXT_SECTIONS[rectData.textIndex] || '';
           }
