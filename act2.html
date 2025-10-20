@@ -896,6 +896,7 @@
         if (isDarkMode) {
           box.style.background = '#000';
           box.style.color = '#FFF';
+          box.style.border = '1px solid #FFF';
           // Update content based on side
           if (box.dataset.side === 'top') {
             box.innerHTML = DARK_TOP_DEF;
@@ -905,6 +906,7 @@
         } else {
           box.style.background = '#FFF';
           box.style.color = '#000';
+          box.style.border = '1px solid #000';
           if (box.dataset.side === 'top') {
             box.innerHTML = ORIGINAL_TOP_DEF;
           } else if (box.dataset.side === 'bottom') {
