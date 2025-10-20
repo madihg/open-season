@@ -179,10 +179,9 @@
 
       #words-grid {
         column-gap: 12px;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
 
-      /* Hide columns 5 and 6 on mobile (only show first 4) */
+      /* Hide columns 5 and 6 on mobile - they won't have content anyway */
       .word-column[data-col="4"],
       .word-column[data-col="5"] {
         display: none;
@@ -464,7 +463,9 @@
 
   <script>
     // ==================== CONFIGURATION ====================
-    const NUM_COLUMNS = 6;
+    function getNumColumns() {
+      return window.innerWidth <= 768 ? 4 : 6;
+    }
     const MOTION_CANVAS_SIZE = { w: 96, h: 72 };
     const MOTION_THRESHOLD = 0.015; // Lowered threshold for better sensitivity
     const REVEAL_INTERVAL_MS = 350;
@@ -544,10 +545,11 @@
 
     // ==================== COLUMN WIDTH SETUP ====================
     function setupColumnWidths() {
+      const numColumns = getNumColumns();
       // Group tokens by column
-      const columnTokens = Array.from({ length: NUM_COLUMNS }, () => []);
+      const columnTokens = Array.from({ length: numColumns }, () => []);
       tokens.forEach((token, idx) => {
-        const colIdx = idx % NUM_COLUMNS;
+        const colIdx = idx % numColumns;
         columnTokens[colIdx].push(token);
       });
 
@@ -719,7 +721,8 @@
     // ==================== WORD REVEAL ====================
     function revealNextWord() {
       const token = tokens[nextIndex];
-      const colIdx = nextIndex % NUM_COLUMNS;
+      const numColumns = getNumColumns();
+      const colIdx = nextIndex % numColumns;
       const column = wordColumns[colIdx];
       
       // Create word box
