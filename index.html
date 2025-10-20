@@ -178,17 +178,23 @@
       }
 
       #words-grid {
-        column-gap: 8px;
-        grid-template-columns: repeat(6, minmax(0, 1fr));
+        column-gap: 12px;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      /* Hide columns 5 and 6 on mobile (only show first 4) */
+      .word-column[data-col="4"],
+      .word-column[data-col="5"] {
+        display: none;
       }
 
       .word-column {
-        gap: 3px;
+        gap: 4px;
       }
 
       .word-box {
-        font-size: 11px;
-        padding: 3px 5px;
+        font-size: 13px;
+        padding: 4px 6px;
         word-break: break-word;
         min-width: 0;
       }
